@@ -4,7 +4,7 @@ const DisplayWeather = ({ weatherData }) => {
   if (!weatherData) return null;
 
   return (
-    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
+    <div className="bg-white rounded-lg border border-white">
       <h2 className="text-xl font-semibold text-blue-800 mb-2">
         Weather for {weatherData.name}
       </h2>
