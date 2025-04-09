@@ -33,13 +33,13 @@ const ForecastWeather = ({ forecastData }) => {
       <div className="grid grid-cols-5 gap-2">
         {dailyForecasts.map((forecast, index) => (
           <div key={index} className="flex flex-col items-center p-2 rounded-lg hover:bg-blue-50 transition">
-            <p className="font-medium">{formatDay(forecast.dt)}</p>
+            <p className="font-medium text-black">{formatDay(forecast.dt)}</p>
             <img 
               src={`https://openweathermap.org/img/wn/${forecast.weather[0].icon}.png`} 
               alt={forecast.weather[0].description} 
               className="w-10 h-10" 
             />
-            <p className="font-bold">{Math.round(forecast.main.temp)}°F</p>
+            <p className="font-bold text-black">{Math.round(forecast.main.temp)}°F</p>
             <p className="text-xs text-gray-500 text-center capitalize">{forecast.weather[0].description}</p>
           </div>
         ))}
