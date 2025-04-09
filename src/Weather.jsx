@@ -108,50 +108,52 @@ const Weather = () => {
   };
 
   return (
-    <div className={`w-full max-w-lg p-6 ${getBackgroundClass()} rounded-lg shadow-lg transition-colors duration-500`}>
-      <h1 className="text-2xl font-bold text-center text-white mb-6">Weather App</h1>
-      <div className="flex mb-4">
-        <div className="relative flex-grow">
-          <input
-            type="text"
-            placeholder="Enter zip code"
-            value={zipCode}
-            onChange={handleInputChange}
-            pattern="\d{5}"
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-          />
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
+    <div className="flex justify-center items-center min-h-screen w-full">
+      <div className={`w-full max-w-lg mx-auto p-6 ${getBackgroundClass()} rounded-lg shadow-lg transition-colors duration-500`}>
+        <h1 className="text-2xl font-bold text-center text-white mb-6">Weather App</h1>
+        <div className="flex mb-4">
+          <div className="relative flex-grow">
+            <input
+              type="text"
+              placeholder="Enter zip code"
+              value={zipCode}
+              onChange={handleInputChange}
+              pattern="\d{5}"
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            />
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
           </div>
+          <button 
+            onClick={fetchWeatherByLocation}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+          </button>
         </div>
-        <button 
-          onClick={fetchWeatherByLocation}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-          </svg>
-        </button>
+        
+        {loading && (
+          <div className="flex justify-center items-center py-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          </div>
+        )}
+        
+        {error && (
+          <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
+            <span className="font-medium">Error:</span> {error}
+          </div>
+        )}
+        
+        {weatherData && <DisplayWeather weatherData={weatherData} />}
+        {forecastData && <ForecastWeather forecastData={forecastData} />}
       </div>
-      
-      {loading && (
-        <div className="flex justify-center items-center py-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        </div>
-      )}
-      
-      {error && (
-        <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
-          <span className="font-medium">Error:</span> {error}
-        </div>
-      )}
-      
-      {weatherData && <DisplayWeather weatherData={weatherData} />}
-      {forecastData && <ForecastWeather forecastData={forecastData} />}
     </div>
   );
 };
