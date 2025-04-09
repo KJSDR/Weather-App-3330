@@ -15,7 +15,7 @@ const DisplayWeather = ({ weatherData }) => {
   return (
     <div className="bg-white bg-opacity-90 backdrop-blur-sm rounded-lg shadow-lg p-6 mb-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-semibold text-blue-800">
+        <h2 className="text-2xl font-semibold text-blue-700">
           {weatherData.name}, {weatherData.sys.country}
         </h2>
         <div className="flex items-center">
@@ -25,7 +25,7 @@ const DisplayWeather = ({ weatherData }) => {
       </div>
 
       <div className="mb-4">
-        <p className="text-lg capitalize text-blue-600">{weatherData.weather[0].description}</p>
+        <p className="text-lg capitalize text-blue-700">{weatherData.weather[0].description}</p>
         <p className="text-gray-700">Feels like: {Math.round(weatherData.main.feels_like)}°F</p>
       </div>
       
