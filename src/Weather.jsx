@@ -1,5 +1,5 @@
 // Weather.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import DisplayWeather from './DisplayWeather';
 import ForecastWeather from './ForecastWeather';
 
@@ -9,15 +9,29 @@ const Weather = () => {
   const [forecastData, setForecastData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [units, setUnits] = useState('imperial'); // imperial = Fahrenheit, metric = Celsius
 
   const handleInputChange = (event) => {
     setZipCode(event.target.value);
   };
 
-  const fetchWeatherData = async (zip) => {
+  const handleUnitsChange = (event) => {
+    setUnits(event.target.value);
+    // If we already have weather data, refetch with new units
+    if (weatherData) {
+      if (zipCode) {
+        fetchWeatherData(zipCode, event.target.value);
+      } else if (weatherData.coord) {
+        // We have coordinates from geolocation
+        fetchWeatherByCoordinates(weatherData.coord.lat, weatherData.coord.lon, event.target.value);
+      }
+    }
+  };
+
+  const fetchWeatherData = useCallback(async (zip, selectedUnits = units) => {
     const apiKey = import.meta.env.VITE_YOUR_API_KEY;
-    const url = `https://api.openweathermap.org/data/2.5/weather?zip=${zip},US&appid=${apiKey}&units=imperial`;
-    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?zip=${zip},US&appid=${apiKey}&units=imperial`;
+    const url = `https://api.openweathermap.org/data/2.5/weather?zip=${zip},US&appid=${apiKey}&units=${selectedUnits}`;
+    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?zip=${zip},US&appid=${apiKey}&units=${selectedUnits}`;
 
     setLoading(true);
     setError(null);
@@ -40,38 +54,44 @@ const Weather = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [units]);
 
-  const fetchWeatherByLocation = () => {
+  const fetchWeatherByCoordinates = useCallback(async (lat, lon, selectedUnits = units) => {
+    const apiKey = import.meta.env.VITE_YOUR_API_KEY;
+    const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=${selectedUnits}`;
+    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=${selectedUnits}`;
+    
+    setLoading(true);
+    setError(null);
+    try {
+      const [weatherResponse, forecastResponse] = await Promise.all([
+        fetch(weatherUrl),
+        fetch(forecastUrl)
+      ]);
+      
+      if (weatherResponse.ok && forecastResponse.ok) {
+        const weatherData = await weatherResponse.json();
+        const forecastData = await forecastResponse.json();
+        setWeatherData(weatherData);
+        setForecastData(forecastData);
+      } else {
+        throw new Error('Network response was not ok');
+      }
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [units]);
+
+  const fetchWeatherByLocation = useCallback(() => {
     if (navigator.geolocation) {
       setLoading(true);
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
-          const apiKey = import.meta.env.VITE_YOUR_API_KEY;
-          const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=imperial`;
-          const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=imperial`;
-          
-          try {
-            const [weatherResponse, forecastResponse] = await Promise.all([
-              fetch(weatherUrl),
-              fetch(forecastUrl)
-            ]);
-            
-            if (weatherResponse.ok && forecastResponse.ok) {
-              const weatherData = await weatherResponse.json();
-              const forecastData = await forecastResponse.json();
-              setWeatherData(weatherData);
-              setForecastData(forecastData);
-              setZipCode('');
-            } else {
-              throw new Error('Network response was not ok');
-            }
-          } catch (error) {
-            setError(error.message);
-          } finally {
-            setLoading(false);
-          }
+          fetchWeatherByCoordinates(latitude, longitude);
+          setZipCode('');
         },
         (err) => {
           setError("Unable to retrieve your location. " + err.message);
@@ -81,13 +101,13 @@ const Weather = () => {
     } else {
       setError("Geolocation is not supported by your browser.");
     }
-  };
+  }, [fetchWeatherByCoordinates]);
 
   useEffect(() => {
     if (zipCode.length === 5) {
       fetchWeatherData(zipCode);
     }
-  }, [zipCode]);
+  }, [zipCode, fetchWeatherData]);
 
   // Determine background class based on weather
   const getBackgroundClass = () => {
@@ -111,6 +131,35 @@ const Weather = () => {
     <div className="flex justify-center items-center min-h-screen w-full">
       <div className={`w-full max-w-lg mx-auto p-6 ${getBackgroundClass()} rounded-lg shadow-lg transition-colors duration-500`}>
         <h1 className="text-2xl font-bold text-center text-white mb-6">Weather App</h1>
+        
+        {/* Temperature Unit Toggle */}
+        <div className="flex justify-center mb-4">
+          <div className="bg-white bg-opacity-80 rounded-lg p-2 inline-flex">
+            <label className="inline-flex items-center mr-4">
+              <input
+                type="radio"
+                name="units"
+                value="imperial"
+                checked={units === 'imperial'}
+                onChange={handleUnitsChange}
+                className="form-radio h-4 w-4 text-blue-600"
+              />
+              <span className="ml-2 text-gray-800">°F</span>
+            </label>
+            <label className="inline-flex items-center">
+              <input
+                type="radio"
+                name="units"
+                value="metric"
+                checked={units === 'metric'}
+                onChange={handleUnitsChange}
+                className="form-radio h-4 w-4 text-blue-600"
+              />
+              <span className="ml-2 text-gray-800">°C</span>
+            </label>
+          </div>
+        </div>
+        
         <div className="flex mb-4">
           <div className="relative flex-grow">
             <input
@@ -151,8 +200,8 @@ const Weather = () => {
           </div>
         )}
         
-        {weatherData && <DisplayWeather weatherData={weatherData} />}
-        {forecastData && <ForecastWeather forecastData={forecastData} />}
+        {weatherData && <DisplayWeather weatherData={weatherData} units={units} />}
+        {forecastData && <ForecastWeather forecastData={forecastData} units={units} />}
       </div>
     </div>
   );
